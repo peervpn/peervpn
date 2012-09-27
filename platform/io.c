@@ -21,12 +21,14 @@
 #define F_IO_C
 
 
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) || defined(__APPLE__)
 #define IO_BSD
 #elif defined(WIN32)
 #define IO_WINDOWS
-#else
+#elif defined(__linux__)
 #define IO_LINUX
+#else
+#error Unknown platform
 #endif
 
 
@@ -86,6 +88,10 @@ struct s_io_state {
 	struct s_io_state_fd fd[IO_FDID_COUNT];
 	HANDLE handle[IO_FDID_COUNT];
 #else
+#if defined(__APPLE__)
+	fd_set fdset;
+	int highdesc;
+#endif
 	struct pollfd fd[IO_FDID_COUNT];
 #endif
 };
@@ -345,13 +351,23 @@ static int ioOpenTap(struct s_io_state *iostate, char *tapname, const char *reqn
 
 	if(req_len > 0) {
 		strncpy(&file[5], reqname, 255);
-		tapfd = open(file,(O_RDWR | O_NONBLOCK));
+#ifdef __APPLE__
+                tapfd = open(file, O_RDWR);
+                fcntl(tapfd, F_SETFL, O_NONBLOCK); // fcntl is needed, open(O_NONBLOCK) won't work
+#else
+                tapfd = open(file, O_RDWR | O_NONBLOCK);
+#endif
 	}
 	else {
 		i = 0;
 		while((i < 1024) && (tapfd < 0)) {
 			snprintf(&file[5], 8, "tap%d", i);
-			tapfd = open(file,(O_RDWR | O_NONBLOCK));
+#ifdef __APPLE__
+			tapfd = open(file, O_RDWR);
+			fcntl(tapfd, F_SETFL, O_NONBLOCK); // fcntl is needed, open(O_NONBLOCK) won't work
+#else
+			tapfd = open(file, O_RDWR | O_NONBLOCK);
+#endif
 			i++;
 		}
 	}
@@ -884,6 +900,33 @@ static void ioWait(struct s_io_state *iostate, const int max_wait) {
 			}
 		}
 	}
+#elif defined(__APPLE__)
+	fd_set fdset;
+	struct timeval seltimeout;
+	int i, fd;
+
+	seltimeout.tv_sec = 1;
+	seltimeout.tv_usec = 0;
+
+	if (iostate->highdesc < 0)
+	{
+		FD_ZERO(&iostate->fdset);
+		for (i = 0; i < IO_FDID_COUNT; i++)
+		{
+			if ((fd = iostate->fd[i].fd) >= 0)
+			{
+				FD_SET(fd, &(iostate->fdset));
+				if (fd > iostate->highdesc)
+				{
+					iostate->highdesc = fd;
+				}
+			}
+		}
+		iostate->highdesc++;
+	}
+	FD_COPY(&(iostate->fdset), &fdset);
+
+	int ret = select(iostate->highdesc, &fdset, NULL, NULL, &seltimeout);
 #else
 	poll(iostate->fd,IO_FDID_COUNT,max_wait);
 #endif
@@ -912,6 +955,9 @@ static void ioCreate(struct s_io_state *iostate) {
 #endif
 		iostate->fd[i].fd = -1;
 	}
+#ifdef __APPLE__
+	iostate->highdesc = -1;
+#endif
 }
 
 
