@@ -1,0 +1,11 @@
+[Unit]
+Description=Peervpn daemon
+After=syslog.target network.target
+
+[Service]
+#Type=forking
+ExecStart=/usr/local/sbin/peervpn /usr/local/etc/peervpn.conf 
+
+[Install]
+WantedBy=multi-user.target
+
