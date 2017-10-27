@@ -6,7 +6,7 @@ The open source peer-to-peer VPN
 ```
 # git clone https://github.com/Nayar/peervpn
 # cd peervpn
-# apt-get install libssl-dev
+# apt-get install libssl-dev make git
 # make
 # make install
 ```
