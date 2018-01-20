@@ -81,10 +81,18 @@ CXzWzPkElg5L22pMUCPfYxo10HKoUHmSYwIBAg==\n\
 
 // Generate a key.
 static int dhGenKey(struct s_dh_state *dhstate) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	BIGNUM *bn;
+#else
+	const BIGNUM *bn;
+#endif
 	int bn_size;
 	if(DH_generate_key(dhstate->dh)) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		bn = dhstate->dh->pub_key;
+#else
+		DH_get0_key(dhstate->dh, &bn, NULL);
+#endif
 		bn_size = BN_num_bytes(bn);
 		if((bn_size > dh_MINSIZE) && (bn_size < dh_MAXSIZE)) {
 			BN_bn2bin(bn, dhstate->pubkey);
@@ -152,13 +160,21 @@ static int dhGetPubkey(unsigned char *buf, const int buf_size, const struct s_dh
 // Generate symmetric keys. Returns 1 if succesful.
 static int dhGenCryptoKeys(struct s_crypto *ctx, const int ctx_count, const struct s_dh_state *dhstate, const unsigned char *peerkey, const int peerkey_len, const unsigned char *nonce, const int nonce_len) {
 	BIGNUM *bn = dhstate->bn;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	const BIGNUM *bndh;
+#endif
 	DH *dh = dhstate->dh;
 	int ret = 0;
 	int maxsize = DH_size(dh);
 	unsigned char secret[maxsize];
 	int size;
 	BN_bin2bn(peerkey, peerkey_len, bn);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	if(BN_ucmp(bn, dh->pub_key) != 0) {
+#else
+	DH_get0_key(dh, &bndh, NULL);
+	if(BN_ucmp(bn, bndh) != 0) {
+#endif
 		size = DH_compute_key(secret, bn, dh);
 		if(size > 0) {
 			ret = cryptoSetKeys(ctx, ctx_count, secret, size, nonce, nonce_len);
