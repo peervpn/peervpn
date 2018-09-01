@@ -1,5 +1,5 @@
 CFLAGS+=-O2
-LIBS+=-lcrypto -lz
+LIBS+=-lcrypto
 
 all: peervpn
 peervpn: peervpn.o
