@@ -1,0 +1,18 @@
+Source: peervpn
+Section: net
+Priority: optional
+Maintainer: Jonathan Sieber <mail@strfry.org>
+Standards-Version: 3.9.5
+Build-Depends: debhelper (>= 9.20120311), libssl1.0-dev | libssl-dev
+Homepage: http://www.peervpn.net/
+
+Package: peervpn
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Meshing Virtual Private Network software
+ PeerVPN is a software that builds virtual ethernet networks between multiple computers. Such a virtual network can be useful to facilitate direct communication that applications like file sharing or gaming may need. Often, such direct communication is made impossible or very difficult by firewalls or NAT devices.
+ Most traditional VPN solutions follow the client-server principle, which means that all participating nodes connect to a central server. This creates a star topology, which has some disadvantages. The central node needs lots of bandwith, because it needs to handle all the VPN traffic. Also, if the central node goes down, the whole VPN is down too.
+ A virtual network built by PeerVPN uses a full mesh topology. All nodes talk directly to each other, there is no need for a central server. If one node goes down, the rest of the network is unaffected.
+ Configuring PeerVPN is easy. You just need to configure a network name, a password and the contact information (IP address and port) of another PeerVPN node. Adding a new node to an existing network doesn't require the existing nodes to alter their configuration, because its IP address is automatically distributed across the whole virtual network.
+
+
