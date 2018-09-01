@@ -1,12 +1,15 @@
 # peervpn
-The open source peer-to-peer VPN
+The open source [peer-to-peer VPN](https://peervpn.net/)
 
-# Compile on Debian
+Original Code: https://github.com/peervpn/peervpn
 
-```
-# apt-get install libssl-dev make git gcc libz-dev
-# git clone https://github.com/Nayar/peervpn
-# cd peervpn
-# make
-# make install
+Tutorial: https://peervpn.net/tutorial/
+
+## Compile on Debian
+
+```shell
+> apt-get install build-essential git libssl-dev debhelper
+> git clone https://github.com/BugMaster510945/peervpn.git
+> cd peervpn
+> dpkg-buildpackage -rfakeroot
 ```
