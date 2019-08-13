@@ -4,7 +4,6 @@ After=network.target
 
 [Service]
 ExecStart=/usr/local/sbin/peervpn /etc/peervpn.conf
-ExecStartPost=/opt/routes.sh
 Restart=on-failure
 
 [Install]
