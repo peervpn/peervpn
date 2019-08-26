@@ -8,5 +8,9 @@ peervpn.o: peervpn.c
 
 install:
 	install peervpn /usr/local/sbin/peervpn
+	install peervpn.conf /etc/peervpn.conf
+	install systemd/peervpn.service /etc/systemd/system/peervpn.service
+	install routes.sh /opt/routes.sh
+	
 clean:
 	rm -f peervpn peervpn.o
